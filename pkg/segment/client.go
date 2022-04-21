@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -29,15 +28,15 @@ type AuthResponse struct {
 	Data AuthResponseData `json:"data`
 }
 
-func NewClient(account_id *int, token *string) (*Client, error) {
+func NewClient(apiURL string, token *string) (*Client, error) {
 	c := Client{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
-		HostURL:    HostURL,
+		HostURL:    apiURL,
 		Token:      *token,
 	}
 
 	if token != nil {
-		url := fmt.Sprintf("%s", HostURL)
+		url := fmt.Sprintf("%s", apiURL)
 
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {

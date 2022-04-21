@@ -6,6 +6,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	//     "github.com/gthesheep/terraform-provider-segment/pkg/data_sources"
+	//     "github.com/gthesheep/terraform-provider-segment/pkg/resources"
 	"github.com/gthesheep/terraform-provider-segment/pkg/segment"
 )
 
@@ -34,17 +36,17 @@ func Provider() *schema.Provider {
 func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 
 	token := d.Get("token").(string)
-	account_id := d.Get("account_id").(int)
+	apiURL := d.Get("api_url").(string)
 
 	var diags diag.Diagnostics
 
-	if (token != "") && (account_id != 0) {
-		c, err := dbt_cloud.NewClient(&account_id, &token)
+	if (token != "") && (apiURL != "") {
+		c, err := segment.NewClient(apiURL, &token)
 
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
-				Summary:  "Unable to login to DBT Cloud",
+				Summary:  "Unable to login to Segment",
 				Detail:   err.Error(),
 			})
 			return nil, diags
@@ -53,11 +55,11 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		return c, diags
 	}
 
-	c, err := dbt_cloud.NewClient(nil, nil)
+	c, err := segment.NewClient("", nil)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary:  "Unable to create DBT Cloud client",
+			Summary:  "Unable to create Segment client",
 			Detail:   err.Error(),
 		})
 		return nil, diags

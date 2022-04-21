@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 )
 
@@ -73,13 +72,13 @@ func (c *Client) GetSource(sourceID string) (*Source, error) {
 }
 
 func (c *Client) CreateSource(slug string, enabled bool, name string, sourceSlug string) (*Source, error) {
-	sourceMetadata := c.GetSourceMetadataFromCatalog(sourceSlug)
+	sourceMetadata, _ := c.GetSourceMetadataFromCatalog(sourceSlug)
 
 	newSource := SourceRequest{
 		Slug:       slug,
 		Enabled:    enabled,
 		Name:       name,
-		MetadataID: *sourceMetadata.ID,
+		MetadataID: &sourceMetadata.ID,
 		// 		Settings: SourceSettings,
 	}
 
@@ -109,7 +108,7 @@ func (c *Client) CreateSource(slug string, enabled bool, name string, sourceSlug
 
 func (c *Client) UpdateSource(sourceID string, slug string, enabled bool, name string) (*Source, error) {
 	updatedSource := SourceRequest{
-		ID:      sourceID,
+		ID:      &sourceID,
 		Slug:    slug,
 		Enabled: enabled,
 		Name:    name,
