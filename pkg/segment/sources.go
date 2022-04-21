@@ -43,6 +43,15 @@ type SourceResponse struct {
 	Source Source `json:"source"`
 }
 
+type SourceRequest struct {
+	ID         *string        `json:"id,omitempty"`
+	Slug       string         `json:"slug"`
+	Name       string         `json:"name"`
+	MetadataID *string        `json:"metadataId,omitempty"`
+	Enabled    bool           `json:"enabled"`
+	Settings   SourceSettings `json:"settings"`
+}
+
 func (c *Client) GetSource(sourceID string) (*Source, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/sources/%s", c.HostURL, sourceID), nil)
 	if err != nil {
@@ -63,73 +72,83 @@ func (c *Client) GetSource(sourceID string) (*Source, error) {
 	return &sourceResponse.Source, nil
 }
 
-// func (c *Client) CreateSource(slug string, enabled bool, name string, metadataId string) (*Source, error) {
-// 	newSource := Source{
-//         Slug: slug,
-//         Enabled: enabled,
-//         Name: name,
-//
-// 	}
-//
-// 	newSourceData, err := json.Marshal(newSource)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-//
-// 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/sources/", c.HostURL, strings.NewReader(string(newSourceData)))
-// 	if err != nil {
-// 		return nil, err
-// 	}
-//
-// 	body, err := c.doRequest(req)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-//
-// 	connectionResponse := ConnectionResponse{}
-// 	err = json.Unmarshal(body, &connectionResponse)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-//
-// 	return &connectionResponse.Data, nil
-// }
+func (c *Client) CreateSource(slug string, enabled bool, name string, sourceSlug string) (*Source, error) {
+	sourceMetadata := c.GetSourceMetadataFromCatalog(sourceSlug)
 
-// func (c *Client) UpdateConnection(connectionID, projectID string, connection Connection) (*Connection, error) {
-// 	connectionData, err := json.Marshal(connection)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-//
-// 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/v3/accounts/%s/projects/%s/connections/%s/", c.HostURL, strconv.Itoa(c.AccountID), projectID, connectionID), strings.NewReader(string(connectionData)))
-// 	if err != nil {
-// 		return nil, err
-// 	}
-//
-// 	body, err := c.doRequest(req)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-//
-// 	connectionResponse := ConnectionResponse{}
-// 	err = json.Unmarshal(body, &connectionResponse)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-//
-// 	return &connectionResponse.Data, nil
-// }
-//
-// func (c *Client) DeleteConnection(connectionID, projectID string) (string, error) {
-// 	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/v3/accounts/%s/projects/%s/connections/%s/", c.HostURL, strconv.Itoa(c.AccountID), projectID, connectionID), nil)
-// 	if err != nil {
-// 		return "", err
-// 	}
-//
-// 	_, err = c.doRequest(req)
-// 	if err != nil {
-// 		return "", err
-// 	}
-//
-// 	return "", err
-// }
+	newSource := SourceRequest{
+		Slug:       slug,
+		Enabled:    enabled,
+		Name:       name,
+		MetadataID: *sourceMetadata.ID,
+		// 		Settings: SourceSettings,
+	}
+
+	newSourceData, err := json.Marshal(newSource)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/sources/", c.HostURL), strings.NewReader(string(newSourceData)))
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	sourceResponse := SourceResponse{}
+	err = json.Unmarshal(body, &sourceResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	return &sourceResponse.Source, nil
+}
+
+func (c *Client) UpdateSource(sourceID string, slug string, enabled bool, name string) (*Source, error) {
+	updatedSource := SourceRequest{
+		ID:      sourceID,
+		Slug:    slug,
+		Enabled: enabled,
+		Name:    name,
+		// 		Settings: SourceSettings,
+	}
+
+	updatedSourceData, err := json.Marshal(updatedSource)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest("PATCH", fmt.Sprintf("%s/sources/%s", c.HostURL, sourceID), strings.NewReader(string(updatedSourceData)))
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	sourceResponse := SourceResponse{}
+	err = json.Unmarshal(body, &sourceResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	return &sourceResponse.Source, nil
+}
+
+func (c *Client) DeleteSource(sourceID string) (string, error) {
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/sources/%s", c.HostURL, sourceID), nil)
+	if err != nil {
+		return "", err
+	}
+
+	_, err = c.doRequest(req)
+	if err != nil {
+		return "", err
+	}
+
+	return "", err
+}
