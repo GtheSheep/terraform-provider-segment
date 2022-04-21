@@ -6,8 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/gthesheep/terraform-provider-segment/pkg/data_sources"
-	"github.com/gthesheep/terraform-provider-segment/pkg/resources"
 	"github.com/gthesheep/terraform-provider-segment/pkg/segment"
 )
 
