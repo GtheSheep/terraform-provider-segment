@@ -3,3 +3,5 @@ vendor/
 terraform-provider*
 
 .idea/
+
+env.vars

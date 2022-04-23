@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	//     "github.com/gthesheep/terraform-provider-segment/pkg/data_sources"
-	//     "github.com/gthesheep/terraform-provider-segment/pkg/resources"
+	"github.com/gthesheep/terraform-provider-segment/pkg/resources"
 	"github.com/gthesheep/terraform-provider-segment/pkg/segment"
 )
 
@@ -23,12 +23,14 @@ func Provider() *schema.Provider {
 			"api_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("SEGMENT_API_TOKEN", "https://api.segmentapis.com"),
+				DefaultFunc: schema.EnvDefaultFunc("SEGMENT_API_URL", "https://api.segmentapis.com"),
 				Description: "Base Api URL to use, i.e. https://eu1.api.segmentapis.com if your Segment account is hosted in the EU",
 			},
 		},
-		DataSourcesMap:       map[string]*schema.Resource{},
-		ResourcesMap:         map[string]*schema.Resource{},
+		DataSourcesMap: map[string]*schema.Resource{},
+		ResourcesMap: map[string]*schema.Resource{
+			"segment_source": resources.ResourceSource(),
+		},
 		ConfigureContextFunc: providerConfigure,
 	}
 }

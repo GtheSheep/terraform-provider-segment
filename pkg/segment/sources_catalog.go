@@ -12,16 +12,18 @@ type SourcesCatalogResponseData struct {
 }
 
 type SourcesCatalogResponse struct {
-	Data SourcesCatalogResponseData `json:"default"`
+	Data SourcesCatalogResponseData `json:"data"`
 }
 
 func (c *Client) GetSourceMetadataFromCatalog(sourceSlug string) (*SourceMetadata, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/sources/catalog?pagination.count=100", c.HostURL), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/catalog/sources?pagination.count=100", c.HostURL), nil)
+
 	if err != nil {
 		return nil, err
 	}
 
 	body, err := c.doRequest(req)
+
 	if err != nil {
 		return nil, err
 	}
@@ -31,6 +33,7 @@ func (c *Client) GetSourceMetadataFromCatalog(sourceSlug string) (*SourceMetadat
 	if err != nil {
 		return nil, err
 	}
+
 	for i, sourceMetadata := range sourcesCatalogResponse.Data.SourcesCatalog {
 		if sourceMetadata.Slug == sourceSlug {
 			return &sourcesCatalogResponse.Data.SourcesCatalog[i], nil
@@ -38,19 +41,22 @@ func (c *Client) GetSourceMetadataFromCatalog(sourceSlug string) (*SourceMetadat
 	}
 
 	for {
-		req, err := http.NewRequest("GET", fmt.Sprintf("%s/sources/catalog?pagination.count=100&pagination.cursor=%s", c.HostURL, sourcesCatalogResponse.Data.Pagination.Next), nil)
+		req, err := http.NewRequest("GET", fmt.Sprintf("%s/sources/catalog?pagination.count=100&pagination.cursor=%s", c.HostURL, *sourcesCatalogResponse.Data.Pagination.Next), nil)
 		if err != nil {
 			return nil, err
 		}
+
 		body, err = c.doRequest(req)
 		if err != nil {
 			return nil, err
 		}
+
 		sourcesCatalogResponse = SourcesCatalogResponse{}
 		err = json.Unmarshal(body, &sourcesCatalogResponse)
 		if err != nil {
 			return nil, err
 		}
+
 		for i, sourceMetadata := range sourcesCatalogResponse.Data.SourcesCatalog {
 			if sourceMetadata.Slug == sourceSlug {
 				return &sourcesCatalogResponse.Data.SourcesCatalog[i], nil

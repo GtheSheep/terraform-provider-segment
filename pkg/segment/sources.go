@@ -12,7 +12,7 @@ type SourceMetadata struct {
 	Name        string              `json:"name"`
 	Slug        string              `json:"slug"`
 	Description string              `json:"description"`
-	Logos       []Logo              `json:"logos"`
+	Logos       Logo                `json:"logos"`
 	Options     []IntegrationOption `json:"options"`
 	Categories  []string            `json:"categories"`
 }
@@ -42,6 +42,10 @@ type SourceResponse struct {
 	Source Source `json:"source"`
 }
 
+type SourceResponseData struct {
+	Data SourceResponse `json:"data"`
+}
+
 type SourceRequest struct {
 	ID         *string        `json:"id,omitempty"`
 	Slug       string         `json:"slug"`
@@ -62,13 +66,14 @@ func (c *Client) GetSource(sourceID string) (*Source, error) {
 		return nil, err
 	}
 
-	sourceResponse := SourceResponse{}
-	err = json.Unmarshal(body, &sourceResponse)
+	sourceResponseData := SourceResponseData{}
+	err = json.Unmarshal(body, &sourceResponseData)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("%s", body)
 
-	return &sourceResponse.Source, nil
+	return &sourceResponseData.Data.Source, nil
 }
 
 func (c *Client) CreateSource(slug string, enabled bool, name string, sourceSlug string) (*Source, error) {
@@ -96,14 +101,13 @@ func (c *Client) CreateSource(slug string, enabled bool, name string, sourceSlug
 	if err != nil {
 		return nil, err
 	}
-
-	sourceResponse := SourceResponse{}
-	err = json.Unmarshal(body, &sourceResponse)
+	sourceResponseData := SourceResponseData{}
+	err = json.Unmarshal(body, &sourceResponseData)
 	if err != nil {
 		return nil, err
 	}
 
-	return &sourceResponse.Source, nil
+	return &sourceResponseData.Data.Source, nil
 }
 
 func (c *Client) UpdateSource(sourceID string, slug string, enabled bool, name string) (*Source, error) {
@@ -129,13 +133,13 @@ func (c *Client) UpdateSource(sourceID string, slug string, enabled bool, name s
 		return nil, err
 	}
 
-	sourceResponse := SourceResponse{}
-	err = json.Unmarshal(body, &sourceResponse)
+	sourceResponseData := SourceResponseData{}
+	err = json.Unmarshal(body, &sourceResponseData)
 	if err != nil {
 		return nil, err
 	}
 
-	return &sourceResponse.Source, nil
+	return &sourceResponseData.Data.Source, nil
 }
 
 func (c *Client) DeleteSource(sourceID string) (string, error) {
