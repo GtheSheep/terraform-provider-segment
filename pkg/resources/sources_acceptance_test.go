@@ -72,7 +72,6 @@ resource "segment_source" "test_source" {
   enabled     = false
   settings {
     track {
-      allow_unplanned_events = true
     }
     identify {
     }
@@ -95,8 +94,11 @@ resource "segment_source" "test_source" {
       allow_unplanned_events = false
     }
     identify {
+      allow_unplanned_traits = false
     }
     group {
+      allow_unplanned_traits = true
+      allow_traits_on_violations = false
     }
   }
 }
