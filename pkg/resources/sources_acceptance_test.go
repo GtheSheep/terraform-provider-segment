@@ -42,6 +42,16 @@ func TestAccDbtCloudConnectionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("segment_source.test_source", "source_slug", "facebook-ads"),
 				),
 			},
+			// FULL CONFIG
+			{
+				Config: testAccSegmentSourceResourceFullConfig(slug, name, "facebook-ads"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSegmentSourceExists("segment_source.test_source"),
+					resource.TestCheckResourceAttr("segment_source.test_source", "slug", slug),
+					resource.TestCheckResourceAttr("segment_source.test_source", "name", name),
+					resource.TestCheckResourceAttr("segment_source.test_source", "source_slug", "facebook-ads"),
+				),
+			},
 			// IMPORT
 			{
 				ResourceName:            "segment_source.test_source",
@@ -60,6 +70,35 @@ resource "segment_source" "test_source" {
   name        = "%s"
   source_slug = "%s"
   enabled     = false
+  settings {
+    track {
+      allow_unplanned_events = true
+    }
+    identify {
+    }
+    group {
+    }
+  }
+}
+`, slug, name, sourceSlug)
+}
+
+func testAccSegmentSourceResourceFullConfig(slug, name, sourceSlug string) string {
+	return fmt.Sprintf(`
+resource "segment_source" "test_source" {
+  slug        = "%s"
+  name        = "%s"
+  source_slug = "%s"
+  enabled     = false
+  settings {
+    track {
+      allow_unplanned_events = false
+    }
+    identify {
+    }
+    group {
+    }
+  }
 }
 `, slug, name, sourceSlug)
 }

@@ -17,7 +17,32 @@ type SourceMetadata struct {
 	Categories  []string            `json:"categories"`
 }
 
+type TrackingSettings struct {
+	AllowUnplannedEvents          bool   `json:"allow_unplanned_events"`
+	AllowUnplannedEventProperties bool   `json:"allow_unplanned_event_properties"`
+	AllowEventOnViolations        bool   `json:"allow_event_on_violations"`
+	AllowPropertiesOnViolations   bool   `json:"allow_properties_on_violations"`
+	CommonEventOnViolations       string `json:"common_event_on_violations"`
+}
+
+type IdentifySettings struct {
+	AllowUnplannedTraits    bool   `json:"allow_unplanned_traits"`
+	AllowTraitsOnViolations bool   `json:"allow_traits_on_violations"`
+	CommonEventOnViolations string `json:"common_event_on_violations"`
+}
+
+type GroupSettings struct {
+	AllowUnplannedTraits    bool   `json:"allow_unplanned_traits"`
+	AllowTraitsOnViolations bool   `json:"allow_traits_on_violations"`
+	CommonEventOnViolations string `json:"common_event_on_violations"`
+}
+
 type SourceSettings struct {
+	ForwardingViolationsTo    string           `json:"forwarding_violations_to"`
+	ForwardingBlockedEventsTo string           `json:"forwarding_blocked_events_to"`
+	Track                     TrackingSettings `json:"track"`
+	Identify                  IdentifySettings `json:"identify"`
+	Group                     GroupSettings    `json:"group"`
 }
 
 type Label struct {
@@ -71,12 +96,11 @@ func (c *Client) GetSource(sourceID string) (*Source, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("%s", body)
 
 	return &sourceResponseData.Data.Source, nil
 }
 
-func (c *Client) CreateSource(slug string, enabled bool, name string, sourceSlug string) (*Source, error) {
+func (c *Client) CreateSource(slug string, enabled bool, name string, sourceSlug string, settings SourceSettings) (*Source, error) {
 	sourceMetadata, _ := c.GetSourceMetadataFromCatalog(sourceSlug)
 
 	newSource := SourceRequest{
@@ -84,7 +108,7 @@ func (c *Client) CreateSource(slug string, enabled bool, name string, sourceSlug
 		Enabled:    enabled,
 		Name:       name,
 		MetadataID: &sourceMetadata.ID,
-		// 		Settings: SourceSettings,
+		Settings:   settings,
 	}
 
 	newSourceData, err := json.Marshal(newSource)
@@ -110,13 +134,13 @@ func (c *Client) CreateSource(slug string, enabled bool, name string, sourceSlug
 	return &sourceResponseData.Data.Source, nil
 }
 
-func (c *Client) UpdateSource(sourceID string, slug string, enabled bool, name string) (*Source, error) {
+func (c *Client) UpdateSource(sourceID string, slug string, enabled bool, name string, settings SourceSettings) (*Source, error) {
 	updatedSource := SourceRequest{
-		ID:      &sourceID,
-		Slug:    slug,
-		Enabled: enabled,
-		Name:    name,
-		// 		Settings: SourceSettings,
+		ID:       &sourceID,
+		Slug:     slug,
+		Enabled:  enabled,
+		Name:     name,
+		Settings: settings,
 	}
 
 	updatedSourceData, err := json.Marshal(updatedSource)

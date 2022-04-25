@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/gthesheep/terraform-provider-segment/pkg/segment"
@@ -49,51 +50,54 @@ func ResourceSource() *schema.Resource {
 			},
 			"settings": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
+				Required:    true,
 				Description: "Map containing settings for the source",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"forwarding_violations_to": {
 							Description: "SourceId to forward violations to.",
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
 						},
 						"forwarding_blocked_events_to": {
 							Description: "SourceId to forward blocked events to.",
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
 						},
 						"track": {
 							Type:     schema.TypeList,
 							Optional: true,
-							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"allow_unplanned_events": {
 										Description: "Enable to allow unplanned track events.",
 										Type:        schema.TypeBool,
-										Required:    true,
+										Optional:    true,
+										Default:     false,
 									},
 									"allow_unplanned_event_properties": {
 										Description: "Enable to allow unplanned track event properties.",
 										Type:        schema.TypeBool,
-										Required:    true,
+										Optional:    true,
+										Default:     false,
 									},
 									"allow_event_on_violations": {
 										Description: "Allow track event on violations.",
 										Type:        schema.TypeBool,
-										Required:    true,
+										Optional:    true,
+										Default:     false,
 									},
 									"allow_properties_on_violations": {
 										Description: "Enable to allow track properties on violations.",
 										Type:        schema.TypeBool,
-										Required:    true,
+										Optional:    true,
+										Default:     false,
 									},
 									"common_event_on_violations": {
 										Description:  "The common track event on violations.",
 										Type:         schema.TypeString,
-										Required:     true,
+										Optional:     true,
+										Default:      "",
 										ValidateFunc: validation.StringInSlice(ViolationEvents, false),
 									},
 								},
@@ -101,24 +105,26 @@ func ResourceSource() *schema.Resource {
 						},
 						"identify": {
 							Type:     schema.TypeList,
-							Optional: true,
-							MaxItems: 1,
+							Required: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"allow_unplanned_traits": {
 										Description: "Enable to allow unplanned identify traits.",
 										Type:        schema.TypeBool,
-										Required:    true,
+										Optional:    true,
+										Default:     false,
 									},
 									"allow_traits_on_violations": {
 										Description: "Enable to allow identify traits on violations.",
 										Type:        schema.TypeBool,
-										Required:    true,
+										Optional:    true,
+										Default:     false,
 									},
 									"common_event_on_violations": {
 										Description:  "The common track event on violations.",
 										Type:         schema.TypeString,
-										Required:     true,
+										Optional:     true,
+										Default:      "",
 										ValidateFunc: validation.StringInSlice(ViolationEvents, false),
 									},
 								},
@@ -126,24 +132,26 @@ func ResourceSource() *schema.Resource {
 						},
 						"group": {
 							Type:     schema.TypeList,
-							Optional: true,
-							MaxItems: 1,
+							Required: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"allow_unplanned_traits": {
 										Description: "Enable to allow unplanned identify traits.",
 										Type:        schema.TypeBool,
-										Required:    true,
+										Optional:    true,
+										Default:     false,
 									},
 									"allow_traits_on_violations": {
 										Description: "Enable to allow identify traits on violations.",
 										Type:        schema.TypeBool,
-										Required:    true,
+										Optional:    true,
+										Default:     false,
 									},
 									"common_event_on_violations": {
 										Description:  "The common track event on violations.",
 										Type:         schema.TypeString,
-										Required:     true,
+										Default:      "",
+										Optional:     true,
 										ValidateFunc: validation.StringInSlice(ViolationEvents, false),
 									},
 								},
@@ -169,8 +177,10 @@ func resourceSourceCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	enabled := d.Get("enabled").(bool)
 	name := d.Get("name").(string)
 	sourceSlug := d.Get("source_slug").(string)
+	settings := d.Get("settings").([]interface{})
+	sourceSettings := mapToSourceSettings(settings)
 
-	source, err := c.CreateSource(slug, enabled, name, sourceSlug)
+	source, err := c.CreateSource(slug, enabled, name, sourceSlug, sourceSettings)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -179,6 +189,76 @@ func resourceSourceCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	resourceSourceRead(ctx, d, m)
 
 	return diags
+}
+
+func mapToSourceSettings(settings []interface{}) segment.SourceSettings {
+	if len(settings) == 0 {
+		return segment.SourceSettings{}
+	}
+	actualSettings := settings[0].(map[string]interface{})
+
+	trackSettingsList := actualSettings["track"].([]interface{})
+	trackSettings := make(map[string]interface{})
+	if len(trackSettingsList) > 0 {
+		trackSettings = trackSettingsList[0].(map[string]interface{})
+	}
+
+	identifySettingsList := actualSettings["identify"].([]interface{})
+	identifySettings := make(map[string]interface{})
+	if len(identifySettingsList) > 0 {
+		identifySettings = identifySettingsList[0].(map[string]interface{})
+	}
+
+	groupSettingsList := actualSettings["group"].([]interface{})
+	groupSettings := make(map[string]interface{})
+	if len(groupSettingsList) > 0 {
+		groupSettings = groupSettingsList[0].(map[string]interface{})
+	}
+	return segment.SourceSettings{
+		ForwardingViolationsTo:    actualSettings["forwarding_violations_to"].(string),
+		ForwardingBlockedEventsTo: actualSettings["forwarding_blocked_events_to"].(string),
+		Track: segment.TrackingSettings{
+			AllowUnplannedEvents:          trackSettings["allow_unplanned_events"].(bool),
+			AllowUnplannedEventProperties: trackSettings["allow_unplanned_event_properties"].(bool),
+			AllowEventOnViolations:        trackSettings["allow_event_on_violations"].(bool),
+			AllowPropertiesOnViolations:   trackSettings["allow_properties_on_violations"].(bool),
+			CommonEventOnViolations:       trackSettings["common_event_on_violations"].(string),
+		},
+		Identify: segment.IdentifySettings{
+			AllowUnplannedTraits:    identifySettings["allow_unplanned_traits"].(bool),
+			AllowTraitsOnViolations: identifySettings["allow_traits_on_violations"].(bool),
+			CommonEventOnViolations: identifySettings["common_event_on_violations"].(string),
+		},
+		Group: segment.GroupSettings{
+			AllowUnplannedTraits:    groupSettings["allow_unplanned_traits"].(bool),
+			AllowTraitsOnViolations: groupSettings["allow_traits_on_violations"].(bool),
+			CommonEventOnViolations: groupSettings["common_event_on_violations"].(string),
+		},
+	}
+	return segment.SourceSettings{}
+}
+
+func flattenSourceSettings(sourceSettings segment.SourceSettings) []interface{} {
+	var settings map[string]interface{}
+	settingsJson, _ := json.Marshal(sourceSettings)
+	json.Unmarshal(settingsJson, &settings)
+
+	flatSettings := make([]interface{}, 1)
+
+	tracking := make([]interface{}, 1)
+	tracking[0] = settings["track"]
+	settings["track"] = tracking
+
+	grouping := make([]interface{}, 1)
+	grouping[0] = settings["group"]
+	settings["group"] = grouping
+
+	identify := make([]interface{}, 1)
+	identify[0] = settings["identify"]
+	settings["identify"] = identify
+
+	flatSettings[0] = settings
+	return flatSettings
 }
 
 func resourceSourceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -206,6 +286,11 @@ func resourceSourceRead(ctx context.Context, d *schema.ResourceData, m interface
 		return diag.FromErr(err)
 	}
 
+	s := flattenSourceSettings(source.Settings)
+	if err := d.Set("settings", s); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return diags
 }
 
@@ -214,7 +299,7 @@ func resourceSourceUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	sourceID := d.Id()
 
-	if d.HasChange("name") || d.HasChange("enabled") {
+	if d.HasChange("name") || d.HasChange("enabled") || d.HasChange("settings") {
 		source, err := c.GetSource(sourceID)
 		if err != nil {
 			return diag.FromErr(err)
@@ -228,8 +313,13 @@ func resourceSourceUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			enabled := d.Get("enabled").(bool)
 			source.Enabled = enabled
 		}
+		if d.HasChange("settings") {
+			settings := d.Get("settings").([]interface{})
+			sourceSettings := mapToSourceSettings(settings)
+			source.Settings = sourceSettings
+		}
 
-		_, err = c.UpdateSource(*source.ID, source.Slug, source.Enabled, source.Name)
+		_, err = c.UpdateSource(*source.ID, source.Slug, source.Enabled, source.Name, source.Settings)
 		if err != nil {
 			return diag.FromErr(err)
 		}

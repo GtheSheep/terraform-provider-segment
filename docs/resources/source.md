@@ -19,32 +19,32 @@ description: |-
 
 - `enabled` (Boolean) Flag for whether or not the source is enabled
 - `name` (String) Descriptive name for the source
+- `settings` (Block List, Min: 1) Map containing settings for the source (see [below for nested schema](#nestedblock--settings))
 - `slug` (String) Slug for the source, lower case
 - `source_slug` (String) Slug for the source, from a list
 
 ### Optional
 
 - `id` (String) The ID of this resource.
-- `settings` (Block List, Max: 1) Map containing settings for the source (see [below for nested schema](#nestedblock--settings))
 
 <a id="nestedblock--settings"></a>
 ### Nested Schema for `settings`
 
 Required:
 
-- `forwarding_blocked_events_to` (String) SourceId to forward blocked events to.
-- `forwarding_violations_to` (String) SourceId to forward violations to.
+- `group` (Block List, Min: 1) (see [below for nested schema](#nestedblock--settings--group))
+- `identify` (Block List, Min: 1) (see [below for nested schema](#nestedblock--settings--identify))
 
 Optional:
 
-- `group` (Block List, Max: 1) (see [below for nested schema](#nestedblock--settings--group))
-- `identify` (Block List, Max: 1) (see [below for nested schema](#nestedblock--settings--identify))
-- `track` (Block List, Max: 1) (see [below for nested schema](#nestedblock--settings--track))
+- `forwarding_blocked_events_to` (String) SourceId to forward blocked events to.
+- `forwarding_violations_to` (String) SourceId to forward violations to.
+- `track` (Block List) (see [below for nested schema](#nestedblock--settings--track))
 
 <a id="nestedblock--settings--group"></a>
 ### Nested Schema for `settings.group`
 
-Required:
+Optional:
 
 - `allow_traits_on_violations` (Boolean) Enable to allow identify traits on violations.
 - `allow_unplanned_traits` (Boolean) Enable to allow unplanned identify traits.
@@ -54,7 +54,7 @@ Required:
 <a id="nestedblock--settings--identify"></a>
 ### Nested Schema for `settings.identify`
 
-Required:
+Optional:
 
 - `allow_traits_on_violations` (Boolean) Enable to allow identify traits on violations.
 - `allow_unplanned_traits` (Boolean) Enable to allow unplanned identify traits.
@@ -64,7 +64,7 @@ Required:
 <a id="nestedblock--settings--track"></a>
 ### Nested Schema for `settings.track`
 
-Required:
+Optional:
 
 - `allow_event_on_violations` (Boolean) Allow track event on violations.
 - `allow_properties_on_violations` (Boolean) Enable to allow track properties on violations.
