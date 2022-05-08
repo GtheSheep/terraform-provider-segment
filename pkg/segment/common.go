@@ -99,4 +99,13 @@ var (
 		"youbora",
 		"zendesk",
 	}
+	WarehouseSlugs = []string{
+		"azuresqldb",
+		"azuresqldw",
+		"bigquery",
+		"db2",
+		"postgres",
+		"redshift",
+		"snowflake",
+	}
 )

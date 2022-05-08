@@ -238,7 +238,7 @@ func mapToSourceSettings(settings []interface{}) segment.SourceSettings {
 	return segment.SourceSettings{}
 }
 
-func flattenSourceSettings(sourceSettings segment.SourceSettings) []    interface{} {
+func flattenSourceSettings(sourceSettings segment.SourceSettings) []interface{} {
 	var settings map[string]interface{}
 	settingsJson, _ := json.Marshal(sourceSettings)
 	json.Unmarshal(settingsJson, &settings)

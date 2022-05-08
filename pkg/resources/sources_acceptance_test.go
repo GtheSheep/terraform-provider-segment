@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccDbtCloudConnectionResource(t *testing.T) {
+func TestAccSegmentSourceResource(t *testing.T) {
 
 	slug := strings.ToLower(acctest.RandStringFromCharSet(4, acctest.CharSetAlpha))
 	name := strings.ToLower(acctest.RandStringFromCharSet(3, acctest.CharSetAlpha))
