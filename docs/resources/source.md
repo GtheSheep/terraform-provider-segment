@@ -23,7 +23,7 @@ description: |-
 - `slug` (String) Slug for the source, lower case
 - `source_slug` (String) Slug for the source, from a list
 
-### Optional
+### Read-Only
 
 - `id` (String) The ID of this resource.
 
