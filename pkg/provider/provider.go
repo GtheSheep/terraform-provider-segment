@@ -29,8 +29,9 @@ func Provider() *schema.Provider {
 		},
 		DataSourcesMap: map[string]*schema.Resource{},
 		ResourcesMap: map[string]*schema.Resource{
-			"segment_source":    resources.ResourceSource(),
-			"segment_warehouse": resources.ResourceWarehouse(),
+			"segment_destination": resources.ResourceDestination(),
+			"segment_source":      resources.ResourceSource(),
+			"segment_warehouse":   resources.ResourceWarehouse(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}

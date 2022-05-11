@@ -41,7 +41,7 @@ func (c *Client) GetWarehouseMetadataFromCatalog(warehouseSlug string) (*Warehou
 	}
 
 	for {
-		req, err := http.NewRequest("GET", fmt.Sprintf("%s/warehouses/catalog?pagination.count=100&pagination.cursor=%s", c.HostURL, *warehousesCatalogResponse.Data.Pagination.Next), nil)
+		req, err := http.NewRequest("GET", fmt.Sprintf("%s/catalog/warehouses?pagination.count=100&pagination.cursor=%s", c.HostURL, *warehousesCatalogResponse.Data.Pagination.Next), nil)
 		if err != nil {
 			return nil, err
 		}

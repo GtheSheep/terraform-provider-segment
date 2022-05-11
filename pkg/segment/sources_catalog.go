@@ -41,7 +41,7 @@ func (c *Client) GetSourceMetadataFromCatalog(sourceSlug string) (*SourceMetadat
 	}
 
 	for {
-		req, err := http.NewRequest("GET", fmt.Sprintf("%s/sources/catalog?pagination.count=100&pagination.cursor=%s", c.HostURL, *sourcesCatalogResponse.Data.Pagination.Next), nil)
+		req, err := http.NewRequest("GET", fmt.Sprintf("%s/catalog/sources?pagination.count=100&pagination.cursor=%s", c.HostURL, *sourcesCatalogResponse.Data.Pagination.Next), nil)
 		if err != nil {
 			return nil, err
 		}
