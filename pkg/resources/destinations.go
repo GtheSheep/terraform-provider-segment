@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/gthesheep/terraform-provider-segment/pkg/segment"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -42,7 +43,7 @@ func ResourceDestination() *schema.Resource {
 			"settings": &schema.Schema{
 				Type:        schema.TypeMap,
 				Required:    true,
-				Description: "Map containing settings for the destination",
+				Description: "Map containing settings for the destination, currently all values must be provided as strings",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -97,6 +98,14 @@ func resourceDestinationRead(ctx context.Context, d *schema.ResourceData, m inte
 	}
 	if err := d.Set("destination_slug", destination.Metadata.Slug); err != nil {
 		return diag.FromErr(err)
+	}
+	if err := d.Set("source_id", destination.SourceID); err != nil {
+		return diag.FromErr(err)
+	}
+	for k, v := range destination.Settings {
+		if _, ok := v.(bool); ok {
+			destination.Settings[k] = strconv.FormatBool(v.(bool))
+		}
 	}
 	if err := d.Set("settings", destination.Settings); err != nil {
 		return diag.FromErr(err)

@@ -20,7 +20,7 @@ type DestinationMetadata struct {
 type Destination struct {
 	ID       *string                `json:"id,omitempty"`
 	Name     string                 `json:"name"`
-	Metadata SourceMetadata         `json:"metadata"`
+	Metadata DestinationMetadata    `json:"metadata"`
 	Enabled  bool                   `json:"enabled"`
 	SourceID string                 `json:"sourceId"`
 	Settings map[string]interface{} `json:"settings"`

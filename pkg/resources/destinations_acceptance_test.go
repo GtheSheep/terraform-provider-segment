@@ -67,6 +67,9 @@ resource "segment_destination" "test_destination" {
   settings = {
     containerId = "xxxx"
     environment = "gtm_auth=xxxx"
+    trackAllPages = "false"
+    trackCategorizedPages = "false"
+    trackNamedPages = "false"
   }
 }
 `, sourceSlug, sourceName, name, destinationSlug)
